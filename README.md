@@ -1,216 +1,230 @@
-# control-plane
+---
+# README — Atlas Deploy Control Plane
 
-Coordination Layer of the MatVerse
+## Overview
 
-O control-plane é a camada de coordenação estrutural do ecossistema MatVerse.
+Atlas Deploy is a deterministic execution circuit designed to ingest repository artifacts, validate admissibility, execute registered motors, and generate cryptographically signed evidence.
 
-Ele não define verdade científica.
-Não executa leis.
-Não mede invariantes.
+The system exists to guarantee that every deployment is
 
-Sua única função é preservar ordem operacional entre sistemas soberanos.
+* deterministic
+* replayable
+* verifiable
+* cryptographically sealed
 
-Sem coordenação, autoridade deriva.
-Sem autoridade, regimes colapsam.
+No execution occurs without evidence.
 
-Função
+No evidence exists without signature.
 
-O control-plane existe para garantir que interações entre módulos ocorram de forma:
+No signature exists without a reproducible state.
 
-determinística
+---
 
-auditável
+## Architectural Role
 
-rastreável
+Atlas Deploy belongs to the **execution domain** of the MatVerse stack and operates strictly below constitutional authority layers.
 
-reversível (via replay)
+Authority never flows upward.
 
-Ele atua como um estabilizador geométrico do sistema.
+```
+Atlas → Papers → Core → PBSE → QEX → Runtime → Deploy Circuit
+```
 
-Posição na Arquitetura
+The deploy circuit executes.
 
-Hierarquia causal do MatVerse:
+It never governs.
 
-ATLAS → define autoridade
-PAPERS → propõem leis
-CORE → implementa realidade matemática
-PBSE/KERNEL → decide admissibilidade
-QEX → produz evidência
-RUNTIME → executa ações
-FOUNDATION → permite verificação pública
-CONTROL-PLANE → coordena o fluxo entre todos
+It never defines truth.
 
+It materializes approved state transitions.
 
-Regra estrutural:
+---
 
-Coordenação nunca altera autoridade.
+## Execution Circuit
 
-Responsabilidades
+Every deployment follows a closed proof cycle:
 
-O control-plane deve:
+```
+INPUT → VALIDATION → MOTOR → VERIFICATION → SIGNATURE → EVIDENCE
+```
 
-descobrir estados e módulos ativos
+### Stages
 
-mapear topologias de acoplamento
+**IA-RECEIVE**
+Validates payload structure and motor registration.
 
-validar conformidade com leis
+**IA-ADMIN**
+Generates deterministic task hash and prepares execution.
 
-orquestrar deploys aprovados
+**MOTOR**
+Executes inside controlled boundaries.
+Arbitrary code is never allowed.
 
-sincronizar evidências
+**ADMIN-VERIFY**
+Validates:
 
-O control-plane coordena — nunca governa.
+* exit status
+* structural schema
+* output presence
+* deterministic constraints
 
-Estrutura Canônica
-control-plane/
-├── discovery/            # identificação de módulos e estados
-├── topology/             # grafo de acoplamentos permitidos
-├── law-check/            # validação contra invariantes do Atlas
-├── deploy-orchestrator/  # coordenação de execuções aprovadas
-├── evidence-sync/        # consistência e replicação de provas
-├── INVARIANTS.md
-├── run.py                # entrypoint único
-└── pyproject.toml
+**IA-CLOSE**
+Produces:
 
-Princípios Operacionais
-Separação de Causalidade
+* result hash
+* merkle leaf
+* NaCl signature
+* evidence note
 
-O control-plane:
+---
 
-não decide
+## Security Model
 
-não executa ciência
+### Registered Motors Only
 
-não redefine leis
+Execution is restricted to motors declared in the registry.
 
-Misturar esses domínios cria instabilidade institucional.
+This prevents total system compromise via arbitrary subprocess calls.
 
-Minimalismo Estrutural
+### Evidence-First Order
 
-Complexidade no control-plane é risco sistêmico.
+The circuit enforces the following sequence:
 
-Preferências arquiteturais:
+```
+Merkle → Signature → Storage → (Optional) Blockchain Anchor
+```
 
-poucos comandos
+Blockchain is temporal anchoring — never the primary source of truth.
 
-comportamento previsível
+### Artifact Sanitization (MANDATORY)
 
-dependências mínimas
+Deployments must exclude sensitive metadata:
 
-logs determinísticos
+```
+.git
+.gitignore
+__pycache__
+*.pyc
+.env
+*.key
+```
 
-Clareza > capacidade.
+Publishing repository history is considered a structural security failure.
 
-Determinismo
+---
 
-Mesma entrada → mesma coordenação.
+## Deterministic Deploy Requirement
 
-Se o comportamento divergir, o erro é estrutural.
+Deployments must originate from immutable commit states.
 
-Auditabilidade
+Never deploy from a live directory.
 
-Toda ação coordenada deve produzir trilha verificável.
+Correct model:
 
-Sem rastreabilidade → inexistência operacional.
+```
+git archive --format=zip --output=repo.zip <commit-sha>
+```
 
-Execução
+Evidence must always be traceable to a Git object.
 
-Entry-point único:
+Without this property, scientific auditability collapses.
 
-python run.py
+---
 
+## Evidence Schema
 
-Expansão futura deve ocorrer via subcomandos previsíveis:
+Each execution produces a signed Evidence Note:
 
-control-plane discover
-control-plane topology
-control-plane validate
-control-plane deploy
-control-plane sync-evidence
+```
+timestamp
+motor
+task_hash
+result_hash
+merkle_leaf
+signature
+verify_key
+exit_code
+stdout
+(optional) blockchain_anchor
+```
 
+Evidence is the primary operational memory of the system.
 
-Evite múltiplas CLIs.
+Logs are not proof.
 
-Fragmentação é entropia organizacional.
+Evidence is.
 
-Invariantes Estruturais
+---
 
-O control-plane existe sob restrições rígidas:
+## Operational Guarantees
 
-Não mover lógica de decisão para esta camada
+* Fail-closed execution
+* Append-only evidence store
+* Deterministic replay capability
+* Cryptographic verification
+* Separation between decision and execution
 
-Não executar código científico
+If two executions diverge under identical inputs, the system is considered invalid.
 
-Não reinterpretar leis
+---
 
-Não acumular utilitários arbitrários
+## Known Failure Class — “Ghost State”
 
-Não se tornar dependência crítica do Atlas
+Execution without public state materialization is treated as a critical fault.
 
-Violação dessas regras implica risco arquitetural grave.
+Formal definition:
 
-Consulte:
+```
+execution ≠ state_transition
+```
 
-INVARIANTS.md
+Deploy success is recognized only when evidence **and** public artifacts agree.
 
-O que o control-plane NÃO é
+---
 
-Não é:
+## Hardening Checklist (Non-Optional)
 
-orchestrator universal
+Before production freeze:
 
-runtime
+* enforce commit-based deploys
+* store ZIP checksum inside evidence
+* pin cryptographic dependencies
+* require absolute paths
+* version motors constitutionally
 
-kernel
+Expansion before hardening is strongly discouraged.
 
-policy engine
+Durable systems grow after becoming rigid.
 
-CI genérico
+---
 
-Ferramentas tendem a expandir seu escopo.
+## What This System Is
 
-Este repositório deve resistir a essa tendência.
+Atlas Deploy is not a CI helper.
 
-Filosofia
+It is not a documentation tool.
 
-O papel desta camada é simples:
+It is an execution protocol capable of producing verifiable computational history.
 
-preservar ordem sem introduzir poder.
+The system does not ask:
 
-Sistemas duráveis mantêm autoridade concentrada
-e coordenação deliberadamente limitada.
+“Did it work?”
 
-Segurança
+It asks:
 
-Diretrizes mínimas:
+“Can it be proven?”
 
-credenciais efêmeras
+Crossing this boundary transforms software into epistemic infrastructure.
 
-autenticação máquina-para-máquina
+---
 
-trilhas de evidência obrigatórias
+## Status
 
-replay possível sempre
+Regime: Candidate
+Execution Model: Deterministic
+Evidence: Signed (NaCl)
+Replay: Supported
 
-Exposição de segredos implica revogação imediata.
+System readiness is no longer constrained by technology — only by structural hardening.
 
-Sem exceções.
-
-Estado do Projeto
-
-Classificação: Infraestrutura Estrutural
-Domínio: Coordenação
-Autoridade: Derivada do Atlas
-
-Este repositório deve permanecer pequeno, legível e previsível.
-
-Quando um control-plane cresce demais, ele começa a disputar autoridade com o sistema que deveria apenas estabilizar.
-
-Esse é o único fracasso inaceitável.
-
-Autor
-
-Mateus Alves Arêas
-ORCID: 0009-0008-2973-4047
-
-MatVerse — Regime ativo.
+---
