@@ -1,0 +1,12 @@
+{
+  "escalate_when_missing": [
+    "hypothesis.traceable",
+    "hypothesis.evidence_hash"
+  ],
+  "allowed_decisions": [
+    "PASS",
+    "BLOCK",
+    "SILENCE",
+    "ESCALATE"
+  ]
+}
