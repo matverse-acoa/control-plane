@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Omega Gate API
+  version: 0.1.0
+paths:
+  /api/submit:
+    post:
+      summary: Submete hipótese e protocolo ao PBSE.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hypothesis:
+                  type: object
+                protocol:
+                  type: object
+      responses:
+        '200':
+          description: Veredito PBSE
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decision:
+                    type: string
+                  reason:
+                    type: string
+                  proof_hash:
+                    type: string
+                  timestamp:
+                    type: string
